@@ -1,0 +1,1 @@
+.venv\Scripts\python.exe main.py E:\快速PR\src --pattern *.ts --tag typescript
