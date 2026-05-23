@@ -4,32 +4,9 @@ import sys
 import argparse
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
 DEFAULT_EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.venv', 'venv', '.idea', '.vscode'}
-
-def load_env(env_path):
-    if not env_path.exists():
-        return
-    with open(env_path, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            # 处理 export KEY=VAL 的情况
-            if line.startswith('export '):
-                line = line[7:].strip()
-            
-            key, _, value = line.partition('=')
-            if not key:
-                continue
-            
-            key = key.strip()
-            value = value.strip()
-            # 简单处理引号 (不处理转义字符，如需完善建议用 python-dotenv)
-            if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
-                value = value[1:-1]
-                
-            os.environ.setdefault(key, value)
 
 # 使用 argparse 替代 sys.argv
 def parse_args():
@@ -45,7 +22,7 @@ def parse_args():
 def main():
     # 解析 .env
     env_file = Path(__file__).parent / '.env'
-    load_env(env_file)
+    load_dotenv(env_file)
 
     args = parse_args()
 
