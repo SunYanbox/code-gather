@@ -4,6 +4,8 @@
 
 ## Features
 
+- **GUI mode** — Folder picker dialog, scrollable preview, copy-to-clipboard, and file export
+- **CLI mode** — Headless operation for scripts and automation
 - Recursively scan any folder for files matching a given pattern
 - Output a clean Markdown document with relative paths as headings
 - Configurable code block language tag per file type
@@ -12,16 +14,39 @@
 
 ## Usage
 
-### Command Line
+### GUI Mode (default)
+
+Simply run without arguments to open the interactive window:
 
 ```bash
-python main.py /path/to/target/folder "*.py" python
+python main.py
 ```
 
-Arguments (in order):
-1. `TARGET_FOLDER` — Path to the folder to scan (required)
-2. `FILE_PATTERN` — Glob pattern for matching files (optional, default: `*.py`)
-3. `CODE_BLOCK_TAG` — Language tag for Markdown code blocks (optional, default: `python`)
+In the GUI:
+
+1. Click **选择文件夹** (Select Folder) to pick a target directory
+2. The scan runs automatically and displays results in a scrollable, selectable preview
+3. Use **📋 复制到剪贴板** to copy all content at once
+4. Use **💾 保存到 output** to save as a Markdown file to the `output/` directory
+
+If `TARGET_FOLDER` is set in `.env`, the GUI will auto-scan that folder on startup.
+
+### CLI Mode
+
+Pass a folder path as the first argument to run in command-line mode:
+
+```bash
+python main.py /path/to/target/folder --pattern "*.py" --tag python
+```
+
+Options:
+
+| Argument       | Description                                           | Default                |
+|----------------|-------------------------------------------------------|------------------------|
+| `path`         | Target folder to scan                                 | (env `TARGET_FOLDER`)  |
+| `--pattern`    | Glob pattern for matching files                       | `*.py`                 |
+| `--tag`        | Language tag for Markdown code blocks                 | `python`               |
+| `--gui`        | Force GUI mode even if a path is provided             | —                      |
 
 ### Using .env
 
@@ -33,17 +58,13 @@ FILE_PATTERN=*.py
 CODE_BLOCK_TAG=python
 ```
 
-Then simply run:
-
-```bash
-python main.py
-```
-
 ### Run Script (Windows)
 
 ```
 run.cmd
 ```
+
+Without arguments, this opens the GUI. To use CLI instead, edit the script or pass arguments directly.
 
 ## Output
 

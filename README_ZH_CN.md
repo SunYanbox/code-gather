@@ -4,6 +4,8 @@
 
 ## 功能
 
+- **GUI 模式** — 文件夹选择对话框、可滚动的预览界面、一键复制到剪贴板、保存到文件
+- **CLI 模式** — 无头运行，适合脚本和自动化
 - 递归扫描任意文件夹中符合模式的文件
 - 生成清晰的 Markdown 文档，以相对路径作为标题
 - 可配置的代码块语言标签
@@ -12,16 +14,39 @@
 
 ## 使用方法
 
-### 命令行
+### GUI 模式（默认）
+
+直接运行即可打开交互窗口：
 
 ```bash
-python main.py /path/to/target/folder "*.py" python
+python main.py
 ```
 
-参数说明（按顺序）：
-1. `TARGET_FOLDER` — 要扫描的目标文件夹路径（必填）
-2. `FILE_PATTERN` — 匹配文件的 Glob 模式（可选，默认：`*.py`）
-3. `CODE_BLOCK_TAG` — Markdown 代码块的语言标签（可选，默认：`python`）
+在界面中：
+
+1. 点击 **选择文件夹** 选取目标目录
+2. 自动扫描并在可滚动的只读文本区展示结果（支持选中和复制）
+3. 点击 **📋 复制到剪贴板** 一键复制全部内容
+4. 点击 **💾 保存到 output** 将结果保存为 Markdown 到 `output/` 目录
+
+如果在 `.env` 中设置了 `TARGET_FOLDER`，启动后会自动扫描该文件夹。
+
+### 命令行模式
+
+传入文件夹路径作为参数即可进入命令行模式：
+
+```bash
+python main.py /path/to/target/folder --pattern "*.py" --tag python
+```
+
+参数说明：
+
+| 参数           | 说明                                               | 默认值                |
+|----------------|----------------------------------------------------|-----------------------|
+| `path`         | 要扫描的目标文件夹路径                             | (env `TARGET_FOLDER`) |
+| `--pattern`    | 匹配文件的 Glob 模式                               | `*.py`                |
+| `--tag`        | Markdown 代码块的语言标签                          | `python`              |
+| `--gui`        | 强制使用 GUI 模式（即使传入了路径）                | —                     |
 
 ### 使用 .env 配置
 
@@ -33,17 +58,13 @@ FILE_PATTERN=*.py
 CODE_BLOCK_TAG=python
 ```
 
-然后直接运行：
-
-```bash
-python main.py
-```
-
 ### Windows 快捷启动
 
 ```
 run.cmd
 ```
+
+不带参数时默认打开 GUI。如需 CLI 模式，请编辑脚本或直接在命令行传参运行。
 
 ## 输出
 
