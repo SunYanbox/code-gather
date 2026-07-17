@@ -23,7 +23,9 @@ def parse_args():
 
 
 def scan_and_format(target_path: Path, pattern: str, tag: str) -> tuple[str, int, int]:
-    """Scan folder and return (markdown_content, success_count, total_count)."""
+    """Scan folder and return (markdown_content, success_count, total_count).
+    Pattern '*' matches all ASCII/UTF-8 files (including files without extension).
+    """
     files = sorted([
         f for f in target_path.rglob(pattern)
         if f.is_file()
@@ -37,10 +39,11 @@ def scan_and_format(target_path: Path, pattern: str, tag: str) -> tuple[str, int
     for fp in files:
         rel = fp.relative_to(target_path).as_posix()
         try:
-            content = fp.read_text(encoding='utf-8')
-        except UnicodeDecodeError:
-            print(f'[Warn] Skipped binary file: ./{rel}')
-            continue
+            # Try UTF-8 first, fallback to ASCII if fails
+            try:
+                content = fp.read_text(encoding='utf-8')
+            except UnicodeDecodeError:
+                content = fp.read_text(encoding='ascii', errors='ignore')
         except OSError as e:
             print(f'[Warn] Skipped unreadable file: ./{rel} - {e}')
             continue
@@ -84,8 +87,14 @@ def gui():
     folder_label = tk.Label(top_frame, text='（尚未选择）', fg='gray', anchor='w')
     folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
 
+    # Pattern entry
+    tk.Label(top_frame, text='文件模式:').pack(side=tk.LEFT, padx=(10, 5))
+    pattern_entry = tk.Entry(top_frame, width=20)
+    pattern_entry.insert(0, os.environ.get('FILE_PATTERN', '*.py'))
+    pattern_entry.pack(side=tk.LEFT)
+
     select_btn = tk.Button(top_frame, text='选择文件夹', command=lambda: select_folder())
-    select_btn.pack(side=tk.RIGHT)
+    select_btn.pack(side=tk.RIGHT, padx=(5, 0))
 
     # ── Text area ────────────────────────────────────────────
     text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, state=tk.DISABLED,
@@ -112,12 +121,14 @@ def gui():
         current_folder_name[0] = folder_path.name
         folder_label.config(text=str(folder_path), fg='black')
 
-        status_var.set(f'正在扫描 {folder_path.name} ...')
-        root.update()
-
-        # 用 .env 中的 pattern/tag 或默认值
-        pattern = os.environ.get('FILE_PATTERN', '*.py')
+        # 获取用户输入的模式
+        pattern = pattern_entry.get().strip()
+        if not pattern:
+            pattern = os.environ.get('FILE_PATTERN', '*.py')
         tag = os.environ.get('CODE_BLOCK_TAG', 'python')
+
+        status_var.set(f'正在扫描 {folder_path.name} (模式: {pattern}) ...')
+        root.update()
 
         try:
             content, ok, total = scan_and_format(folder_path, pattern, tag)
@@ -161,6 +172,10 @@ def gui():
                          font=('', 10), padx=5)
     save_btn.pack(side=tk.LEFT, padx=(0, 10))
 
+    rescan_btn = tk.Button(bottom_frame, text='🔍 重新扫描', command=lambda: select_folder(),
+                            font=('', 10), padx=5)
+    rescan_btn.pack(side=tk.LEFT, padx=(0, 10))
+
     reselect_btn = tk.Button(bottom_frame, text='🔄 重新选择', command=select_folder,
                              font=('', 10), padx=5)
     reselect_btn.pack(side=tk.LEFT)
@@ -179,7 +194,9 @@ def gui():
 
             pattern = os.environ.get('FILE_PATTERN', '*.py')
             tag = os.environ.get('CODE_BLOCK_TAG', 'python')
-            status_var.set(f'正在扫描 {folder_path.name} ...')
+            pattern_entry.delete(0, tk.END)
+            pattern_entry.insert(0, pattern)
+            status_var.set(f'正在扫描 {folder_path.name} (模式: {pattern}) ...')
             root.update()
 
             try:
